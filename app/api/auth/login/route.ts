@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { cookies } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import { verifyPassword, createSession } from "@/lib/auth"
 
@@ -11,7 +10,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
     }
 
-    // Find student by email or username
     const student = await prisma.student.findFirst({
       where: {
         OR: [{ email: email }, { username: email }],
@@ -28,17 +26,24 @@ export async function POST(request: NextRequest) {
     }
 
     const session = await createSession(student.id)
-    const cookieStore = await cookies()
 
-    cookieStore.set("session", session.id, {
+    // ✅ Create response and set cookie
+    const response = NextResponse.json({
+      id: student.id,
+      name: student.name,
+      email: student.email,
+      username: student.username,
+    })
+
+    response.cookies.set("session", session.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 24 * 60 * 60, // 24 hours
+      path: "/", // needed to access from all routes
     })
 
-    const { password: _, ...studentData } = student
-    return NextResponse.json(studentData)
+    return response
   } catch (error) {
     console.error("Login error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

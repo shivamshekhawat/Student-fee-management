@@ -33,7 +33,7 @@ Styling: Tailwind CSS + custom animations
 📋 How to Run the Project
 1. Clone and Install
 
-git clone <your-repo>
+git clone https://github.com/shivamshekhawat/Student-fee-management.git
 cd student-fee-management
 npm install
 

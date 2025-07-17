@@ -1,10 +1,13 @@
+// app/api/auth/me/route.ts
+
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { getSession } from "@/lib/auth"
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
+    const cookieStore = cookies() // ✅ FIXED: Removed await
+
     const sessionId = cookieStore.get("session")?.value
 
     if (!sessionId) {
@@ -16,6 +19,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid session" }, { status: 401 })
     }
 
+    // Exclude password before returning student data
     const { password: _, ...studentData } = session.student
     return NextResponse.json(studentData)
   } catch (error) {

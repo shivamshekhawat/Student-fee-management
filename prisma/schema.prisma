@@ -1,0 +1,55 @@
+// This is your Prisma schema file for MongoDB
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  username  String?  @unique
+  password  String
+  feesPaid  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  sessions  Session[]
+  payments  Payment[]
+
+  @@map("students")
+}
+
+model Session {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  studentId String   @db.ObjectId
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Payment {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  studentId       String   @db.ObjectId
+  amount          Int      // Amount in cents
+  paymentMethod   String
+  transactionId   String   @unique
+  status          String   @default("completed")
+  createdAt       DateTime @default(now())
+
+  // Relations
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
